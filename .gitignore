@@ -50,3 +50,15 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# ISO
+*.iso
+
+# takeme files
+takeme/System/*
+takeme/LaunchMe
+takeme/LaunchMe.sym
+takeme/BannerScreen
+
+# VS Code stuff.
+.vscode/*

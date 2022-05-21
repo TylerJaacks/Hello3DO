@@ -1,23 +1,29 @@
 DEBUG = 1
 
-3DO_SDK    = ~/3do-devkit
+3DO_SDK    = ~/Documents/Development/3do-devkit
 
 FILESYSTEM = takeme
 EXENAME	   = $(FILESYSTEM)/LaunchMe
 ISONAME    = Hello3DO.iso
 STACKSIZE  = 4096
-BANNER	   = banner.bmp
+BANNER	   = $(GRAPHICS_SRC)/banner/banner.bmp
 
-CC	   = armcc
-CXX	   = armcpp
-AS 	   = armasm
-LD	   = armlink
+COMPILER_PATH = $(3DO_SDK)/bin/compiler/linux
+TOOLS_PATH = $(3DO_SDK)/bin/tools/linux
+
+CC	   = $(COMPILER_PATH)/armcc
+CXX	   = $(COMPILER_PATH)/armcpp
+AS 	   = $(COMPILER_PATH)/armasm
+LD	   = $(COMPILER_PATH)/armlink
 RM	   = rm
 CP	   = cp
-MODBIN     = modbin
-MAKEBANNER = MakeBanner
-3DOISO     = 3doiso
-3DOENCRYPT = 3DOEncrypt
+WINE   = wine
+RETRO_ARCH = retroarch
+MODBIN     		= $(TOOLS_PATH)/modbin
+MAKEBANNER 		= $(TOOLS_PATH)/MakeBanner
+3DOISO     		= $(TOOLS_PATH)/3doiso
+3DOENCRYPT 		= $(TOOLS_PATH)/3DOEncrypt
+BMPTO3DOIMAGE 	= BMPTo3DOImage.exe
 
 ## Flag definitions ##
 # -bigend   : Compiles code for an ARM operating with big-endian memory. The most
@@ -64,16 +70,20 @@ OBJ += $(SRC_S:src/%.s=build/%.s.o)
 OBJ += $(SRC_C:src/%.c=build/%.c.o)
 OBJ += $(SRC_CXX:src/%.cpp=build/%.cpp.o)
 
-SYSTEM = takeme/System
-SIGNATURES = takeme/signatures
-ROM_TAGS = takeme/rom_tags
-BANNER_SCREEN = takeme/BannerScreen 
+SYSTEM = $(FILESYSTEM)/System
+SIGNATURES = $(FILESYSTEM)/signatures
+ROM_TAGS = $(FILESYSTEM)/rom_tags
+BANNER_SCREEN = $(FILESYSTEM)/BannerScreen
+
+GRAPHICS_SRC = graphics
+GRAPHICS_DEST = $(FILESYSTEM)/Graphics
+GAME_GRAPHICS = $(GRAPHICS_SRC)/game
 BUILD = build
 
 all: copy banner launchme modbin iso
 
 copy:
-	$(CP) -r $(3DO_SDK)/takeme/System takeme
+	$(CP) -r $(3DO_SDK)/takeme/System $(FILESYSTEM)
 
 launchme: builddir $(OBJ)
 	$(LD) -o $(EXENAME) $(LDFLAGS) $(STARTUP) $(LIBS) $(OBJ)
@@ -102,5 +112,8 @@ build/%.cpp.o: src/%.cpp
 
 clean:
 	$(RM) -vrf $(OBJ) $(EXENAME) $(EXENAME).sym $(ISONAME) $(SYSTEM) $(BANNER_SCREEN) $(BUILD)
+
+launch: all
+	$(RETRO_ARCH) -L  ~/.config/retroarch/cores/opera_libretro.so $(ISONAME) &
 
 .PHONY: clean modbin banner iso
