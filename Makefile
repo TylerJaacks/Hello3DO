@@ -1,6 +1,7 @@
 DEBUG = 1
 
-3DO_SDK    = ~/Documents/Development/3do-devkit
+3DO_SDK    		= ~/Documents/Development/3do-devkit
+EXTRA_TOOLS 	= ~/Documents/Development/3do-extra-tools
 
 FILESYSTEM = takeme
 EXENAME	   = $(FILESYSTEM)/LaunchMe
@@ -23,7 +24,9 @@ MODBIN     		= $(TOOLS_PATH)/modbin
 MAKEBANNER 		= $(TOOLS_PATH)/MakeBanner
 3DOISO     		= $(TOOLS_PATH)/3doiso
 3DOENCRYPT 		= $(TOOLS_PATH)/3DOEncrypt
-BMPTO3DOIMAGE 	= BMPTo3DOImage.exe
+BMPTO3DOIMAGE 	= $(EXTRA_TOOLS)/BMPTo3DOImage.exe
+BMPTO3DOCEL 	= $(EXTRA_TOOLS)/BMPTo3DOCel.exe
+
 
 ## Flag definitions ##
 # -bigend   : Compiles code for an ARM operating with big-endian memory. The most
@@ -55,12 +58,12 @@ LDFLAGS	 = -match 0x1 -nodebug -noscanlib -verbose -remove -aif -reloc -dupok -r
 STARTUP	 = $(LIBPATH)/cstartup.o
 
 LIBS =					\
-	$(LIBPATH)/clib.lib		\
-	$(LIBPATH)/cpluslib.lib		\
-	$(LIBPATH)/graphics.lib         \
-	$(LIBPATH)/lib3do.lib           \
-	$(LIBPATH)/filesystem.lib       \
-	$(LIBPATH)/operamath.lib
+    $(LIBPATH)/clib.lib		\
+    $(LIBPATH)/cpluslib.lib		\
+    $(LIBPATH)/graphics.lib         \
+    $(LIBPATH)/lib3do.lib           \
+    $(LIBPATH)/filesystem.lib       \
+    $(LIBPATH)/operamath.lib
 
 SRC_S   = $(wildcard src/*.s)
 SRC_C   = $(wildcard src/*.c)
@@ -75,13 +78,19 @@ SIGNATURES = $(FILESYSTEM)/signatures
 ROM_TAGS = $(FILESYSTEM)/rom_tags
 BANNER_SCREEN = $(FILESYSTEM)/BannerScreen
 
-GRAPHICS_SRC = graphics
-GRAPHICS_DEST = $(FILESYSTEM)/Graphics
-GAME_GRAPHICS = $(GRAPHICS_SRC)/game
+GAME_GRAPHICS = graphics/game
+CD_GRAPHICS = $(FILESYSTEM)/Graphics
+
+BANNER = graphics/banner/banner.bmp
+
 BUILD = build
 
-all: copy banner launchme modbin iso
+all: copy convert_bmp banner launchme modbin iso
 
+convert_bmp: buildgraphicsdir
+	$(WINE) $(BMPTO3DOIMAGE) $(GAME_GRAPHICS)/bg.bmp $(CD_GRAPHICS)/bg
+	$(WINE) $(BMPTO3DOCEL) $(GAME_GRAPHICS)/sun.bmp $(CD_GRAPHICS)/sun
+		
 copy:
 	$(CP) -r $(3DO_SDK)/takeme/System $(FILESYSTEM)
 
@@ -101,6 +110,9 @@ iso:
 builddir:
 	mkdir -p build/
 
+buildgraphicsdir:
+	mkdir -p $(FILESYSTEM)/Graphics
+
 build/%.s.o: src/%.s
 	$(AS) $(INCPATH) $(ASFLAGS) $< -o $@
 
@@ -111,7 +123,7 @@ build/%.cpp.o: src/%.cpp
 	$(CXX) $(INCPATH) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	$(RM) -vrf $(OBJ) $(EXENAME) $(EXENAME).sym $(ISONAME) $(SYSTEM) $(BANNER_SCREEN) $(BUILD)
+	$(RM) -vrf $(OBJ) $(EXENAME) $(EXENAME).sym $(ISONAME) $(SYSTEM) $(BANNER_SCREEN) $(BUILD) $(FILESYSTEM)/Graphics
 
 launch: all
 	$(RETRO_ARCH) -L  ~/.config/retroarch/cores/opera_libretro.so $(ISONAME) &
