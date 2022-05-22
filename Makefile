@@ -63,7 +63,12 @@ LIBS =					\
     $(LIBPATH)/graphics.lib         \
     $(LIBPATH)/lib3do.lib           \
     $(LIBPATH)/filesystem.lib       \
-    $(LIBPATH)/operamath.lib
+    $(LIBPATH)/operamath.lib		\
+	$(LIBPATH)/audio.lib 			\
+	$(LIBPATH)/music.lib 			\
+	$(LIBPATH)/exampleslib.lib 		\
+	$(LIBPATH)/input.lib			\
+	$(LIBPATH)/swi.lib 				
 
 SRC_S   = $(wildcard src/*.s)
 SRC_C   = $(wildcard src/*.c)

@@ -1,6 +1,8 @@
 #include "stdio.h"
 #include "displayutils.h"
 #include "celutils.h"
+#include "controlpad.h"
+#include "event.h"
 
 #define CURRENT_SCREEN sc->sc_CurrentScreen
 
@@ -10,13 +12,20 @@
 #define FRACBITS_16 16
 #define FRACBITS_20 20
 
+#define CEL_VEL_16 (4 << FRACBITS_16)
+
 ScreenContext *sc;
+CCB *ccb;
+
+ControlPadEventData eventData;
+
 Item sport;
 Item vbl;
-CCB *ccb;
 
 ubyte *bg;
 
+uint32 previousButtons;
+uint32 buttons;
 
 // Initialize everything.
 void init()
@@ -39,13 +48,10 @@ void init()
     // Move the cel to the center of the screen;
     ccb->ccb_XPos = 144 << FRACBITS_16;
     ccb->ccb_YPos = 104 << FRACBITS_16;
-
-    // Scale the cel by 2 times.
-    ccb->ccb_HDX = 2 << FRACBITS_20;
-    ccb->ccb_VDY = 2 << FRACBITS_16;
-
     // Makes it so there is only one cel in the list.
     ccb->ccb_Flags |= CCB_LAST;
+
+    InitEventUtility(1, 0, LC_Observer);
 }
 
 int main(int argc, char *argv[])
@@ -55,6 +61,68 @@ int main(int argc, char *argv[])
 
     while (TRUE)
     {
+        /* Update */
+
+        GetControlPad(1, FALSE, &eventData);
+
+        buttons = eventData.cped_ButtonBits;
+
+        if (buttons & ControlLeft)
+        {
+            ccb->ccb_XPos -= CEL_VEL_16;
+
+            if (buttons & ControlUp)
+            {
+                ccb->ccb_YPos -= CEL_VEL_16;
+            }
+            else if (buttons & ControlDown)
+            {
+                ccb->ccb_YPos += CEL_VEL_16;
+            }
+        }
+        else if (buttons & ControlRight)
+        {
+            ccb->ccb_XPos += CEL_VEL_16;
+
+            if (buttons & ControlUp)
+            {
+                ccb->ccb_YPos -= CEL_VEL_16;
+            }
+            else if (buttons & ControlDown)
+            {
+                ccb->ccb_YPos += CEL_VEL_16;
+            }
+        }
+
+        else if (buttons & ControlUp)
+        {
+            ccb->ccb_YPos -= CEL_VEL_16;
+
+            if (buttons & ControlLeft)
+            {
+                ccb->ccb_XPos -= CEL_VEL_16;
+            }
+            else if (buttons & ControlRight)
+            {
+                ccb->ccb_XPos += CEL_VEL_16;
+            }
+        }
+        else if (buttons & ControlDown)
+        {
+            ccb->ccb_YPos += CEL_VEL_16;
+
+            if (buttons & ControlLeft)
+            {
+                ccb->ccb_XPos -= CEL_VEL_16;
+            }
+            else if (buttons & ControlRight)
+            {
+                ccb->ccb_XPos += CEL_VEL_16;
+            }
+        }
+
+        /* Draw */
+
         // Set the background to our bitmap.
         CopyVRAMPages(sport, CURRENT_SCREEN_BITMAPS->bm_Buffer, bg, sc->sc_NumBitmapPages, -1);
 
@@ -68,6 +136,8 @@ int main(int argc, char *argv[])
 
         // Wait for VBlank.
         WaitVBL(vbl, 1);
+
+        previousButtons = buttons;
     }
 
     return 0;

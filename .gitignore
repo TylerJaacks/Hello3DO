@@ -54,11 +54,15 @@ dkms.conf
 # ISO
 *.iso
 
+# Build folder.
+build/*
+
 # takeme files
 takeme/System/*
 takeme/LaunchMe
 takeme/LaunchMe.sym
 takeme/BannerScreen
+takeme/Graphics/*
 
 # VS Code stuff.
 .vscode/*
