@@ -90,11 +90,13 @@ BANNER = graphics/banner/banner.bmp
 
 BUILD = build
 
-all: copy convert_bmp banner launchme modbin iso
+all: copy convert_bmp banner launchme modbin iso copy_iso
 
 convert_bmp: buildgraphicsdir
 	$(WINE) $(BMPTO3DOIMAGE) $(GAME_GRAPHICS)/bg.bmp $(CD_GRAPHICS)/bg
+	
 	$(WINE) $(BMPTO3DOCEL) $(GAME_GRAPHICS)/sun.bmp $(CD_GRAPHICS)/sun
+	$(WINE) $(BMPTO3DOCEL) $(GAME_GRAPHICS)/bullet.bmp $(CD_GRAPHICS)/bullet
 		
 copy:
 	$(CP) -r $(3DO_SDK)/takeme/System $(FILESYSTEM)
@@ -132,5 +134,8 @@ clean:
 
 launch: all
 	$(RETRO_ARCH) -L  ~/.config/retroarch/cores/opera_libretro.so $(ISONAME) &
+
+copy_iso: all
+	$(CP) $(ISONAME) /mnt/d/
 
 .PHONY: clean modbin banner iso

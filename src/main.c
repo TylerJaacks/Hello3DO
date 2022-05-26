@@ -17,6 +17,8 @@
 ScreenContext *sc;
 CCB *ccb;
 
+CCB *bullets[100];
+
 ControlPadEventData eventData;
 
 Item sport;
@@ -26,6 +28,9 @@ ubyte *bg;
 
 uint32 previousButtons;
 uint32 buttons;
+
+int i;
+int j;
 
 // Initialize everything.
 void init()
@@ -49,8 +54,8 @@ void init()
     ccb->ccb_XPos = 144 << FRACBITS_16;
     ccb->ccb_YPos = 104 << FRACBITS_16;
     // Makes it so there is only one cel in the list.
-    ccb->ccb_Flags |= CCB_LAST;
-
+    // ccb->ccb_Flags |= CCB_LAST;
+    
     InitEventUtility(1, 0, LC_Observer);
 }
 
@@ -120,13 +125,31 @@ int main(int argc, char *argv[])
                 ccb->ccb_XPos += CEL_VEL_16;
             }
         }
+        else if (buttons & ControlA)
+        {
+            bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+            bullets[i]->ccb_XPos = ccb->ccb_XPos;
+            bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+            i++;
+        }
 
         /* Draw */
 
         // Set the background to our bitmap.
         CopyVRAMPages(sport, CURRENT_SCREEN_BITMAPS->bm_Buffer, bg, sc->sc_NumBitmapPages, -1);
 
+        // Draws the Sun.
         DrawCels(sc->sc_BitmapItems[CURRENT_SCREEN], ccb);
+
+        j = 0;
+
+        for (; j < 100; j++) {
+            DrawCels(sc->sc_BitmapItems[CURRENT_SCREEN], bullets[j]);
+
+            bullets[j]->ccb_XPos += CEL_VEL_16;
+        }
 
         // Display to the screen.
         DisplayScreen(CURRENT_SCREEN_ITEMS, 0);
