@@ -14,6 +14,8 @@
 
 #define CEL_VEL_16 (4 << FRACBITS_16)
 
+#define BULLET_VEL_16 (8 << FRACBITS_16)
+
 ScreenContext *sc;
 CCB *ccb;
 
@@ -37,7 +39,7 @@ void init()
 {
     OpenGraphicsFolio();
 
-    sc = (ScreenContext*) AllocMem(sizeof(ScreenContext), MEMTYPE_ANY);
+    sc = (ScreenContext *)AllocMem(sizeof(ScreenContext), MEMTYPE_ANY);
 
     CreateBasicDisplay(sc, DI_TYPE_DEFAULT, 2);
 
@@ -46,8 +48,8 @@ void init()
     sport = GetVRAMIOReq();
     vbl = GetVBLIOReq();
 
-    bg = (ubyte*) LoadImage("Graphics/bg", NULL, NULL, sc);
-    
+    bg = (ubyte *)LoadImage("Graphics/bg", NULL, NULL, sc);
+
     ccb = LoadCel("Graphics/sun", MEMTYPE_CEL);
 
     // Move the cel to the center of the screen;
@@ -55,7 +57,7 @@ void init()
     ccb->ccb_YPos = 104 << FRACBITS_16;
     // Makes it so there is only one cel in the list.
     // ccb->ccb_Flags |= CCB_LAST;
-    
+
     InitEventUtility(1, 0, LC_Observer);
 }
 
@@ -67,6 +69,8 @@ int main(int argc, char *argv[])
     while (TRUE)
     {
         /* Update */
+
+        /* Input */
 
         GetControlPad(1, FALSE, &eventData);
 
@@ -84,6 +88,23 @@ int main(int argc, char *argv[])
             {
                 ccb->ccb_YPos += CEL_VEL_16;
             }
+
+            if (buttons & ControlA)
+            {
+                if (i <= 100)
+                {
+                    bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+                    bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                    bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
+            }
         }
         else if (buttons & ControlRight)
         {
@@ -96,6 +117,23 @@ int main(int argc, char *argv[])
             else if (buttons & ControlDown)
             {
                 ccb->ccb_YPos += CEL_VEL_16;
+            }
+
+            if (buttons & ControlA)
+            {
+                if (i <= 100)
+                {
+                    bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+                    bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                    bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
             }
         }
 
@@ -111,6 +149,23 @@ int main(int argc, char *argv[])
             {
                 ccb->ccb_XPos += CEL_VEL_16;
             }
+
+            if (buttons & ControlA)
+            {
+                if (i <= 100)
+                {
+                    bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+                    bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                    bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
+            }
         }
         else if (buttons & ControlDown)
         {
@@ -124,15 +179,56 @@ int main(int argc, char *argv[])
             {
                 ccb->ccb_XPos += CEL_VEL_16;
             }
+
+            if (buttons & ControlA)
+            {
+                if (i <= 100)
+                {
+                    bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+                    bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                    bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
+            }
         }
         else if (buttons & ControlA)
         {
-            bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+            if (i <= 100)
+            {
+                bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
 
-            bullets[i]->ccb_XPos = ccb->ccb_XPos;
-            bullets[i]->ccb_YPos = ccb->ccb_YPos;
+                bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                bullets[i]->ccb_YPos = ccb->ccb_YPos;
 
-            i++;
+                i++;
+            }
+            else
+            {
+                i = 0;
+            }
+
+            if (buttons & ControlA)
+            {
+                if (i <= 100)
+                {
+                    bullets[i] = LoadCel("Graphics/bullet", MEMTYPE_CEL);
+
+                    bullets[i]->ccb_XPos = ccb->ccb_XPos;
+                    bullets[i]->ccb_YPos = ccb->ccb_YPos;
+
+                    i++;
+                }
+                else
+                {
+                    i = 0;
+                }
+            }
         }
 
         /* Draw */
@@ -145,10 +241,11 @@ int main(int argc, char *argv[])
 
         j = 0;
 
-        for (; j < 100; j++) {
+        for (; j < 100; j++)
+        {
             DrawCels(sc->sc_BitmapItems[CURRENT_SCREEN], bullets[j]);
 
-            bullets[j]->ccb_XPos += CEL_VEL_16;
+            bullets[j]->ccb_XPos += BULLET_VEL_16;
         }
 
         // Display to the screen.
